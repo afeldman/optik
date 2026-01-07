@@ -14,6 +14,9 @@ pub mod feature_registry;
 pub mod basler;
 pub mod ids;
 pub mod config;
+pub mod nng_rpc;
+pub mod nng_server;
+pub mod image_codec;
 
 use camera::Camera;
 use frame::Frame;
