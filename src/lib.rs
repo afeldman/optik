@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH, Duration};
 use ndarray::Array3;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -8,6 +8,8 @@ use thiserror::Error;
 pub mod camera;
 pub mod frame;
 pub mod gige;
+pub mod multi_camera;
+pub mod lock_utils;
 
 use camera::{Camera, CameraError};
 use frame::Frame;
@@ -22,6 +24,12 @@ pub enum OptikError {
     ConfigError(String),
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
+    #[error("Lock error: {0}")]
+    LockError(String),
+    #[error("Lock timeout: {0}")]
+    LockTimeout(String),
+    #[error("Frame queue error: {0}")]
+    QueueError(String),
 }
 
 pub type Result<T> = std::result::Result<T, OptikError>;
@@ -65,7 +73,9 @@ impl PyCamera {
     fn open(&self) -> PyResult<()> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .open()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
@@ -73,7 +83,9 @@ impl PyCamera {
     fn close(&self) -> PyResult<()> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .close()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
@@ -81,7 +93,9 @@ impl PyCamera {
     fn grab_frame(&self) -> PyResult<PyFrame> {
         let frame = self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .grab_frame()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
 
@@ -93,7 +107,9 @@ impl PyCamera {
     fn set_exposure(&self, exposure_us: f32) -> PyResult<()> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .set_exposure(exposure_us)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
@@ -101,7 +117,9 @@ impl PyCamera {
     fn get_exposure(&self) -> PyResult<f32> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .get_exposure()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
@@ -109,7 +127,9 @@ impl PyCamera {
     fn set_gain(&self, gain: f32) -> PyResult<()> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .set_gain(gain)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
@@ -117,7 +137,9 @@ impl PyCamera {
     fn get_gain(&self) -> PyResult<f32> {
         self.inner
             .lock()
-            .unwrap()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                format!("Failed to acquire lock: {}", e)
+            ))?
             .get_gain()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))
     }
