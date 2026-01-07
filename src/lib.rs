@@ -17,6 +17,7 @@ pub mod config;
 pub mod nng_rpc;
 pub mod nng_server;
 pub mod image_codec;
+pub mod redis_stream;
 
 use camera::Camera;
 use frame::Frame;
