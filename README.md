@@ -1,6 +1,6 @@
 # optik 🎥 - Hochperformanter RPi Kamera-Manager
 
-![Tests](https://img.shields.io/badge/tests-27%2F27-brightgreen)
+![Tests](https://img.shields.io/badge/tests-44%2F44-brightgreen)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange)
@@ -13,7 +13,8 @@ Hochperformanter Kamera-Manager für Raspberry Pi mit **Rust Core** für maximal
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Architecture](#architektur)
-- [Rust Core](#rust-core)
+- [Rust Core](#rust-core-implementation)
+- [Device Discovery](#device-discovery--controller-framework)
 - [Shared Memory IPC](#shared-memory-ipc---high-speed-on-linux)
 - [GigE Vision Support](#gige-vision-support)
 - [Mutex Pattern & Threading](#mutex-pattern--thread-safety)
@@ -34,7 +35,8 @@ Hochperformanter Kamera-Manager für Raspberry Pi mit **Rust Core** für maximal
 - ✅ **Error Handling** - Proper error types (LockError, LockTimeout, QueueError, ShmemError)
 - ✅ **Frame Queue** - Non-blocking queue für Frame-Verarbeitung
 - ✅ **Lock Timeouts** - `try_lock()` und `lock_with_timeout()` support
-- ✅ **27/27 Tests** - Vollständige Test-Abdeckung
+- ✅ **Device Discovery** - Plugin-based controller system (Basler, IDS, RPi, GigE)
+- ✅ **44/44 Tests** - Vollständige Test-Abdeckung
 
 ## 📦 Anforderungen
 
@@ -349,6 +351,79 @@ buf = PyFrameBuffer(640, 480, 3)  # Pre-allocate
 size = buf.size()
 buf.clear()
 ```
+
+---
+
+## 🔌 Device Discovery & Controller Framework
+
+### Plugin-basierte Architektur
+
+optik nutzt ein **trait-basiertes Controller-System** für verschiedene Kamera-Typen:
+
+```rust
+pub trait Controller: Send + Sync {
+    fn discover_devices(&self) -> Result<Vec<DeviceInfo>>;
+    fn open_camera(&self, device: &DeviceInfo) -> Result<Box<dyn Camera>>;
+    fn controller_type(&self) -> ControllerType;
+}
+
+pub enum ControllerType {
+    Basler,  // Pylon GigE/USB3
+    IDS,     // Ensenso USB3
+    RPi,     // Raspberry Pi Camera Module
+    GigE,    // Generic GigE Vision
+}
+```
+
+### Device Discovery
+
+```python
+from optik import ControllerRegistry
+
+# Erstelle Registry
+registry = ControllerRegistry()
+
+# Entdecke alle Kameras
+devices = registry.discover_all()
+for dev in devices:
+    print(f"{dev.model_name} ({dev.controller_type})")
+    print(f"  Serial: {dev.serial_number}")
+    print(f"  Available: {dev.available}")
+
+# Öffne eine Kamera
+cam = registry.open_camera(devices[0])
+```
+
+### DeviceInfo Struktur
+
+```rust
+pub struct DeviceInfo {
+    pub device_id: String,              // Eindeutige ID
+    pub model_name: String,             // "Basler ace2 Pro"
+    pub serial_number: String,          // "SN123456"
+    pub controller_type: ControllerType,
+    pub available: bool,
+    pub vendor: Option<String>,
+    pub firmware_version: Option<String>,
+    pub ip_address: Option<String>,     // Für Netzwerk-Kameras
+    pub mac_address: Option<String>,
+    pub metadata: Option<serde_json::Value>,
+}
+```
+
+### Supported Controllers
+
+#### Phase 1 (Current) ✅
+- ✓ **Mock Controller** - For testing
+- ✓ **RPi Camera** - Native support
+- ✓ **GigE Vision** - UDP protocol
+
+#### Phase 2 (In Progress)
+- 🔲 **Basler** - via pypylon (Python wrapper)
+- 🔲 **IDS** - via ids_peak (Python wrapper)
+- 🔲 **Feature Registry** - Dynamic property discovery
+
+**Test Coverage**: 10/10 ✅ (Controller + Device Tests)
 
 ---
 
@@ -756,23 +831,36 @@ cargo test --release lock_utils::tests
 cargo test --release -- --nocapture
 ```
 
-### Test Coverage: 27/27 ✅
+### Test Coverage: 44/44 ✅
 
 ```
-📷 Camera Tests         (5/5)  ✓
-🌐 GigE Tests           (5/5)  ✓
-📦 Frame Tests          (5/5)  ✓
-🔒 Lock Utils Tests     (3/3)  ✓
-📹 Multi-Camera Tests   (5/5)  ✓
-💾 Shared Memory Tests  (5/5)  ✓ NEW!
+📷 Camera Tests          (5/5)   ✓
+🌐 GigE Tests            (5/5)   ✓
+📦 Frame Tests           (5/5)   ✓
+🔒 Lock Utils Tests      (3/3)   ✓
+📹 Multi-Camera Tests    (5/5)   ✓
+💾 Shared Memory Tests   (5/5)   ✓
+🔌 Device Tests          (5/5)   ✓ NEW!
+🎛️ Controller Tests       (10/10) ✓ NEW!
+⚠️ Error Tests            (3/3)   ✓ NEW!
+🐍 Python FFI Tests      (2/2)   ✓
 ```
 
-**Shared Memory Tests:**
-- ✓ test_shmem_create (buffer initialization)
-- ✓ test_shmem_write_read (frame write/read roundtrip)
-- ✓ test_shmem_ring_buffer (circular queue management)
-- ✓ test_shmem_cbor_roundtrip (metadata serialization)
-- ✓ test_shmem_stats (diagnostics)
+**Phase 1 Tests (Device Discovery - NEW):**
+- ✓ test_device_info_new (DeviceInfo creation)
+- ✓ test_device_info_builder (Builder pattern)
+- ✓ test_device_info_friendly_name (Display)
+- ✓ test_controller_type_display (ControllerType enum)
+- ✓ test_device_info_serialization (Serde JSON)
+- ✓ test_mock_controller_discover (Discovery)
+- ✓ test_controller_registry_register (Registry)
+- ✓ test_controller_registry_discover_all (Multi-discovery)
+- ✓ test_controller_registry_discover_by_type (Filtered discovery)
+- ✓ test_controller_registry_open_camera (Device opening)
+- ✓ test_multiple_controller_types (Multi-type support)
+- ✓ test_error_display (Error formatting)
+- ✓ test_error_device (Device errors)
+- ✓ test_result_type (Result type checking)
 
 ### Python Tests
 
