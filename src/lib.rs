@@ -1,9 +1,5 @@
 use pyo3::prelude::*;
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH, Duration};
-use ndarray::Array3;
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 pub mod camera;
 pub mod frame;
@@ -11,31 +7,13 @@ pub mod gige;
 pub mod multi_camera;
 pub mod lock_utils;
 pub mod shmem;
+pub mod device;
+pub mod controller;
+pub mod error;
 
-use camera::{Camera, CameraError};
+use camera::Camera;
 use frame::Frame;
-
-#[derive(Error, Debug)]
-pub enum OptikError {
-    #[error("Camera error: {0}")]
-    CameraError(#[from] CameraError),
-    #[error("Frame error: {0}")]
-    FrameError(String),
-    #[error("Configuration error: {0}")]
-    ConfigError(String),
-    #[error("IO error: {0}")]
-    IoError(#[from] std::io::Error),
-    #[error("Lock error: {0}")]
-    LockError(String),
-    #[error("Lock timeout: {0}")]
-    LockTimeout(String),
-    #[error("Frame queue error: {0}")]
-    QueueError(String),
-    #[error("Shared memory error: {0}")]
-    ShmemError(String),
-}
-
-pub type Result<T> = std::result::Result<T, OptikError>;
+pub use error::{OptikError, Result};
 
 /// Rust core module for optik
 #[pymodule]
