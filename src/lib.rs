@@ -10,6 +10,7 @@ pub mod frame;
 pub mod gige;
 pub mod multi_camera;
 pub mod lock_utils;
+pub mod shmem;
 
 use camera::{Camera, CameraError};
 use frame::Frame;
@@ -30,6 +31,8 @@ pub enum OptikError {
     LockTimeout(String),
     #[error("Frame queue error: {0}")]
     QueueError(String),
+    #[error("Shared memory error: {0}")]
+    ShmemError(String),
 }
 
 pub type Result<T> = std::result::Result<T, OptikError>;
