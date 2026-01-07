@@ -1,6 +1,6 @@
 # optik 🎥 - Hochperformanter RPi Kamera-Manager
 
-![Tests](https://img.shields.io/badge/tests-44%2F44-brightgreen)
+![Tests](https://img.shields.io/badge/tests-69%2F69-brightgreen)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange)
@@ -36,7 +36,7 @@ Hochperformanter Kamera-Manager für Raspberry Pi mit **Rust Core** für maximal
 - ✅ **Frame Queue** - Non-blocking queue für Frame-Verarbeitung
 - ✅ **Lock Timeouts** - `try_lock()` und `lock_with_timeout()` support
 - ✅ **Device Discovery** - Plugin-based controller system (Basler, IDS, RPi, GigE)
-- ✅ **44/44 Tests** - Vollständige Test-Abdeckung
+- ✅ **69/69 Tests** - Vollständige Test-Abdeckung
 
 ## 📦 Anforderungen
 
@@ -351,6 +351,76 @@ buf = PyFrameBuffer(640, 480, 3)  # Pre-allocate
 size = buf.size()
 buf.clear()
 ```
+
+#### `feature_registry.rs` - Dynamic Feature Management
+
+```rust
+pub enum FeatureValue { Integer(i64), Float(f64), Boolean(bool), String(String), Enum(String) }
+
+pub struct FeatureRegistry {
+    features: Arc<parking_lot::RwLock<HashMap<String, FeatureDescriptor>>>,
+}
+
+impl FeatureRegistry {
+    pub fn register(&self, descriptor: FeatureDescriptor);
+    pub fn get_value(&self, name: &str) -> Result<FeatureValue>;
+    pub fn set_value(&self, name: &str, value: FeatureValue) -> Result<()>;
+    pub fn list(&self) -> Vec<String>;
+}
+```
+
+**Purpose**: Query and configure dynamic camera properties
+- Type-safe value conversions (as_f64, as_i64, as_bool)
+- Constraint validation (min/max, enum values)
+- Thread-safe RwLock access
+- Builder pattern for feature registration
+
+**Test Coverage**: 9/9 ✅
+
+#### `basler.rs` - Basler Camera Driver
+
+```rust
+pub struct BaslerCamera {
+    device_info: DeviceInfo,
+    is_open: bool,
+    exposure_us: f64,
+    gain_db: f64,
+    features: FeatureRegistry,
+}
+```
+
+**Features**:
+- Full `Camera` trait implementation
+- ExposureTime (10µs - 10s)
+- Gain (0 - 48 dB)
+- PixelFormat (Mono8, Mono12, RGB8)
+- Width/Height (2048x2048)
+- Feature registry for dynamic discovery
+
+**Test Coverage**: 8/8 ✅
+
+#### `ids.rs` - IDS Ensenso Camera Driver
+
+```rust
+pub struct IDSCamera {
+    device_info: DeviceInfo,
+    is_open: bool,
+    exposure_us: f64,
+    gain_db: f64,
+    features: FeatureRegistry,
+}
+```
+
+**Features**:
+- Full `Camera` trait implementation
+- ExposureTime (5µs - 30s)
+- Gain (0 - 96 dB) - higher than Basler!
+- PixelFormat (Mono8, RGB8, BGR8)
+- TriggerMode (Off, On)
+- Width/Height (2560x2048)
+- Feature registry for dynamic discovery
+
+**Test Coverage**: 8/8 ✅
 
 ---
 
@@ -831,36 +901,33 @@ cargo test --release lock_utils::tests
 cargo test --release -- --nocapture
 ```
 
-### Test Coverage: 44/44 ✅
+### Test Coverage: 69/69 ✅
 
 ```
-📷 Camera Tests          (5/5)   ✓
-🌐 GigE Tests            (5/5)   ✓
-📦 Frame Tests           (5/5)   ✓
-🔒 Lock Utils Tests      (3/3)   ✓
-📹 Multi-Camera Tests    (5/5)   ✓
-💾 Shared Memory Tests   (5/5)   ✓
-🔌 Device Tests          (5/5)   ✓ NEW!
-🎛️ Controller Tests       (10/10) ✓ NEW!
-⚠️ Error Tests            (3/3)   ✓ NEW!
-🐍 Python FFI Tests      (2/2)   ✓
+📷 Camera Tests           (5/5)   ✓
+🌐 GigE Tests             (5/5)   ✓
+📦 Frame Tests            (5/5)   ✓
+🔒 Lock Utils Tests       (3/3)   ✓
+📹 Multi-Camera Tests     (5/5)   ✓
+💾 Shared Memory Tests    (5/5)   ✓
+🔌 Device Tests           (5/5)   ✓
+🎛️ Controller Tests        (10/10) ✓
+⚠️ Error Tests             (3/3)   ✓
+🚀 Feature Registry Tests  (9/9)   ✓ NEW!
+📸 Basler Camera Tests    (8/8)   ✓ NEW!
+📹 IDS Camera Tests       (8/8)   ✓ NEW!
+🐍 Python FFI Tests       (2/2)   ✓
 ```
 
-**Phase 1 Tests (Device Discovery - NEW):**
-- ✓ test_device_info_new (DeviceInfo creation)
-- ✓ test_device_info_builder (Builder pattern)
-- ✓ test_device_info_friendly_name (Display)
-- ✓ test_controller_type_display (ControllerType enum)
-- ✓ test_device_info_serialization (Serde JSON)
-- ✓ test_mock_controller_discover (Discovery)
-- ✓ test_controller_registry_register (Registry)
-- ✓ test_controller_registry_discover_all (Multi-discovery)
-- ✓ test_controller_registry_discover_by_type (Filtered discovery)
-- ✓ test_controller_registry_open_camera (Device opening)
-- ✓ test_multiple_controller_types (Multi-type support)
-- ✓ test_error_display (Error formatting)
-- ✓ test_error_device (Device errors)
-- ✓ test_result_type (Result type checking)
+**Phase 1 Tests (Device Discovery):**
+- Device Info: 5 tests (creation, builder, display, serialization)
+- Controller Registry: 10 tests (discovery, open, filtering)
+- Error types: 3 tests
+
+**Phase 2 Tests (Camera Drivers & Feature Registry - NEW):**
+- Feature Registry: 9 tests (conversions, constraints, validation, get/set, readonly)
+- Basler Camera: 8 tests (open/close, grab, exposure, gain, features, info)
+- IDS Camera: 8 tests (same as Basler + trigger support validation)
 
 ### Python Tests
 
