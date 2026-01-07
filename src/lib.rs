@@ -10,6 +10,9 @@ pub mod shmem;
 pub mod device;
 pub mod controller;
 pub mod error;
+pub mod feature_registry;
+pub mod basler;
+pub mod ids;
 
 use camera::Camera;
 use frame::Frame;
