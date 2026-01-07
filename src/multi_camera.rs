@@ -91,7 +91,7 @@ impl MultiCameraHandler {
             let queue_clone = Arc::clone(&self.frame_queue);
             let running_clone = Arc::clone(&self.running);
             let max_queue = self.config.max_queue_size;
-            let timeout = Duration::from_millis(self.config.timeout_ms);
+            let _timeout = Duration::from_millis(self.config.timeout_ms);
 
             let handle = tokio::spawn(async move {
                 while running_clone.load(std::sync::atomic::Ordering::SeqCst) {
@@ -226,7 +226,7 @@ mod tests {
         let cam = Arc::new(StdMutex::new(Box::new(RpiCamera::new(0)) as Box<dyn Camera>));
         let _ = handler.register_camera(0, cam);
         
-        let handles = handler.start_capture().unwrap();
+        let _handles = handler.start_capture().unwrap();
         assert!(handler.is_running());
         
         handler.stop_capture();

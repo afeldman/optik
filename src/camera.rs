@@ -17,6 +17,19 @@ pub enum CameraError {
     ConfigError(String),
 }
 
+/// Camera trait for unified interface across different camera implementations
+///
+/// # Examples
+///
+/// ```ignore
+/// use optik::camera::Camera;
+///
+/// let mut camera = create_camera();
+/// camera.open().expect("Failed to open camera");
+/// let frame = camera.grab_frame().expect("Failed to grab frame");
+/// camera.set_exposure(5000.0).expect("Failed to set exposure");
+/// camera.close().expect("Failed to close camera");
+/// ```
 pub trait Camera: Send + Sync {
     fn open(&mut self) -> Result<()>;
     fn close(&mut self) -> Result<()>;
@@ -29,6 +42,15 @@ pub trait Camera: Send + Sync {
     fn info(&self) -> CameraInfo;
 }
 
+/// Information about a camera device
+///
+/// # Fields
+///
+/// * `serial` - Serial number of the camera
+/// * `vendor` - Vendor/manufacturer name
+/// * `model` - Model identifier
+/// * `width` - Image width in pixels
+/// * `height` - Image height in pixels
 #[derive(Debug, Clone)]
 pub struct CameraInfo {
     pub serial: String,

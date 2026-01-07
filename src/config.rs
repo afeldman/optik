@@ -201,7 +201,7 @@ impl CameraConfig {
 
         // Store original values for rollback on error
         let original_exposure = camera.get_exposure()?;
-        let original_gain = camera.get_gain()?;
+        let _original_gain = camera.get_gain()?;
 
         // Apply settings
         if let Err(e) = camera.set_exposure(self.exposure_us) {

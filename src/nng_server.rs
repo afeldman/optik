@@ -206,7 +206,7 @@ impl NngServer {
     ) -> Response {
         let mut cameras = self.cameras.lock().unwrap();
         match cameras.get_mut(camera_id) {
-            Some(camera) => {
+            Some(_camera) => {
                 // We can't call apply_to_camera on trait object directly
                 // Just validate and record success
                 match config.validate() {

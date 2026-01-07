@@ -1,4 +1,28 @@
 /// Frame structure containing image data and metadata
+///
+/// Represents a single camera frame with associated metadata and raw pixel data.
+///
+/// # Fields
+///
+/// * `timestamp` - Microseconds since UNIX_EPOCH
+/// * `sequence` - Frame sequence number
+/// * `width` - Image width in pixels
+/// * `height` - Image height in pixels
+/// * `channels` - Number of color channels (1=Mono, 3=RGB)
+/// * `exposure_us` - Exposure time in microseconds
+/// * `gain` - Gain in decibels (dB)
+/// * `data` - Raw pixel data (RGB or Mono)
+///
+/// # Examples
+///
+/// ```
+/// use optik::frame::Frame;
+///
+/// let frame = Frame::new(640, 480, 1, vec![0u8; 640*480]);
+/// assert_eq!(frame.width, 640);
+/// assert_eq!(frame.height, 480);
+/// assert_eq!(frame.channels, 1);
+/// ```
 #[derive(Clone, Debug)]
 pub struct Frame {
     pub timestamp: u64,      // Microseconds since UNIX_EPOCH

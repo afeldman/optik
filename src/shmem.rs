@@ -101,7 +101,7 @@ impl SharedMemoryBuffer {
             .map_err(|e: std::io::Error| OptikError::ShmemError(e.to_string()))?;
 
         // Memory map by reading into buffer
-        let mut buffer = vec![0u8; size];
+        let buffer = vec![0u8; size];
 
         let header = SharedMemoryHeader {
             magic: SHMEM_MAGIC,
@@ -219,7 +219,7 @@ impl SharedMemoryBuffer {
         }
 
         // Update ring buffer entry
-        let entry_offset = header_size + (write_idx * mem::size_of::<RingBufferEntry>());
+        let _entry_offset = header_size + (write_idx * mem::size_of::<RingBufferEntry>());
         let entry = RingBufferEntry {
             metadata_offset: data_offset as u32,
             metadata_size: metadata_bytes.len() as u32,
@@ -250,7 +250,7 @@ impl SharedMemoryBuffer {
         }
 
         let header_size = mem::size_of::<SharedMemoryHeader>();
-        let entry_offset = header_size + (read_idx * mem::size_of::<RingBufferEntry>());
+        let _entry_offset = header_size + (read_idx * mem::size_of::<RingBufferEntry>());
 
         let entry = unsafe {
             let ptr = self.buffer.as_ptr() as *const RingBufferEntry;
