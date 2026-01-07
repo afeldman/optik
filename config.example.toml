@@ -1,0 +1,18 @@
+# optik Configuration Example
+
+[cameras.rpi]
+enabled = true
+# RPi Camera spezifische Einstellungen
+pixel_format = "RGB8"
+exposure_us = 10000
+gain_db = 5.0
+
+[mux]
+# Multiplexer-Server
+host = "0.0.0.0"
+port = 5555
+buffer_size = 10
+
+[logging]
+level = "INFO"
+format = "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"

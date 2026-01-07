@@ -1,0 +1,218 @@
+================================================================================
+                           🎥 optik - Projekt erstellt
+================================================================================
+
+PROJEKT-NAME: optik
+BESCHREIBUNG: Hochperformantes Kamera-Management-System
+TECHNOLOGIE:  Python 3.10+ + Rust/Maturin + NNG
+LIZENZ:       Apache 2.0 (kostenlos, kommerzielle Nutzung erlaubt)
+VERSION:      0.1.0
+
+================================================================================
+                            KERNFEATURES
+================================================================================
+
+✅ Multi-Vendor Support      Basler (pypylon) + IDS (ids_peak)
+✅ Hybride Architektur       Python API + Rust/Maturin Core
+✅ Netzwerk-Multiplexer      CBOR über NNG, ein Port für alle Kameras
+✅ Einheitliche API          Exposure, Gain, PixelFormat, Trigger
+✅ Thread-Safe               Sichere nebenläufige Zugriffe
+✅ CLI + Python API          Fire-basierte Kommandozeile
+✅ Tests                     pytest mit Mocks (ohne echte Hardware)
+✅ Konfiguration             TOML-basiert
+✅ Dokumentation             README, QUICKSTART, DEVELOPMENT
+
+================================================================================
+                            PROJEKTSTRUKTUR
+================================================================================
+
+optik/
+├── src/
+│   ├── lib.rs                          # Rust Maturin Core
+│   └── python/optik/
+│       ├── __init__.py
+│       ├── exceptions.py               # Fehlertypen
+│       ├── camera.py                   # BaslerCamera, IDSCamera
+│       ├── controller.py               # Discovery & Management
+│       ├── config.py                   # Konfiguration
+│       ├── cli.py                      # Fire CLI
+│       └── mux/
+│           ├── server.py               # CBOR Mux Server
+│           └── client.py               # Mux Client
+├── tests/
+│   ├── test_camera.py                  # Camera Tests
+│   └── test_controller.py              # Controller Tests
+├── examples_basic.py                   # Einfaches Beispiel
+├── examples_mux.py                     # Mux-Client Beispiel
+├── Cargo.toml                          # Rust Dependencies
+├── pyproject.toml                      # Python Setup
+├── pytest.ini                          # Test Config
+├── Makefile                            # Build Targets
+├── setup.sh                            # Quick Setup Script
+├── config.example.toml                 # Config Vorlage
+├── .editorconfig                       # Editor Settings
+├── .gitignore                          # Git Ignore
+├── LICENSE                             # Apache 2.0
+├── README.md                           # Übersicht
+├── QUICKSTART.md                       # Schnelleinstieg
+├── DEVELOPMENT.md                      # Dev Guide
+├── CHANGELOG.md                        # Version History
+└── PROJECT_SUMMARY.md                  # Diese Info
+
+================================================================================
+                          QUICK START
+================================================================================
+
+1. SETUP:
+   cd /Users/anton.feldmann/Projects/priv/optik
+   ./setup.sh
+
+2. KAMERAS AUFLISTEN:
+   optik list
+
+3. FRAME GRABBEN:
+   optik grab --camera 0 --output frame.png
+
+4. MUX-SERVER STARTEN:
+   optik mux-server --port 5555
+
+5. PYTHON API:
+   from optik import MultiController
+   
+   with MultiController() as ctrl:
+       cameras = ctrl.discover()
+       frame = cameras[0].safe_get_image()
+
+================================================================================
+                          DEPENDENCIES
+================================================================================
+
+Python Packages:
+- pypylon>=4.2.0           (Basler SDK)
+- ids-peak>=1.11.0         (IDS SDK)
+- pynng>=0.8.1             (Networking)
+- cbor2>=5.6.5             (Serialization)
+- pydantic>=2.11.7         (Validation)
+- loguru>=0.7.3            (Logging)
+- fire>=0.7.0              (CLI)
+- numpy>=1.21.6            (Arrays)
+- opencv-python>=4.12.0    (Optional)
+
+Rust Crates:
+- pyo3>=0.22               (Python FFI)
+- tokio>=1.40              (Async Runtime)
+- ndarray>=0.16            (Arrays)
+- memmap2>=0.9             (Memory Mapping)
+
+================================================================================
+                          ARCHITEKTUR HIGHLIGHTS
+================================================================================
+
+1. CAMERA ABSTRACTION:
+   - Abstrakte Basis-Klasse mit gemeinsamer Schnittstelle
+   - Vendor-spezifische Implementierungen (Basler, IDS)
+   - Thread-safe Frame Grabbing mit safe_get_image()
+
+2. DISCOVERY PATTERN:
+   - Vendor-spezifische Controller
+   - MultiController für Multi-Vendor Support
+   - DeviceInfo für Kamera-Metadaten
+
+3. MULTIPLEXER:
+   - CBOR-kodierte Messages über NNG
+   - REQ/REP Pattern für Zuverlässigkeit
+   - Single TCP Port für alle Kameras
+
+4. RUST OPTIMIZATION:
+   - FrameBuffer für effizientes Buffer-Management
+   - FrameMetadata für Timing-Informationen
+   - Möglichkeit für GPU-Integration (Future)
+
+5. CONFIGURATION:
+   - TOML-basiert
+   - Pydantic-validiert
+   - Per-Vendor Settings
+
+================================================================================
+                          ENTWICKLUNG
+================================================================================
+
+TESTS:
+  pytest                    # Alle Tests
+  pytest -v                 # Verbose
+  pytest --cov=optik       # Mit Coverage
+
+CODE QUALITY:
+  make lint                 # Linting
+  make format               # Formatting
+  make test                 # Tests
+
+RUST:
+  make build                # Kompilieren
+  maturin develop           # Development Build
+
+================================================================================
+                          LIZENZ
+================================================================================
+
+Apache License 2.0
+- Kostenlos nutzbar
+- Kommerzielle Nutzung erlaubt
+- Attribution erforderlich
+- Keine Markenrechte
+
+Wichtig: Kein "" oder "-ai" im Code/Namen!
+
+================================================================================
+                          NÄCHSTE SCHRITTE
+================================================================================
+
+SOFORT:
+□ Setup-Script ausführen: ./setup.sh
+□ Kameras testen: optik list
+□ Tests ausführen: pytest
+
+ENTWICKLUNG:
+□ Hardware-Tests mit echten Basler/IDS Kameras
+□ CLI erweitern
+□ Rust-Optimierungen
+□ GPU-Support (CUDA/OpenCL)
+
+RELEASE:
+□ PyPI Deployment vorbereiten
+□ Docker Images erstellen
+□ Video-Dokumentation
+□ GitHub / GitLab Setup
+
+================================================================================
+                          DATEIEN ZUM LESEN
+================================================================================
+
+📖 QUICKSTART.md          → Anfänger-Guide
+📖 DEVELOPMENT.md         → Entwickler-Guide
+📖 PROJECT_SUMMARY.md     → Detaillierte Übersicht
+📖 README.md              → Projekt-Übersicht
+📖 Cargo.toml             → Rust-Dependencies
+📖 pyproject.toml         → Python-Setup
+
+================================================================================
+                          WICHTIGE BEFEHLE
+================================================================================
+
+./setup.sh                        # Erste Installation
+optik list                        # Kameras auflisten
+optik grab --camera 0             # Frame grabben
+optik info --camera 0             # Kamera-Info
+optik mux-server --port 5555      # Server starten
+python examples_basic.py          # Beispiel 1
+python examples_mux.py            # Beispiel 2
+make test                         # Tests
+make lint                         # Linting
+make format                       # Code formatieren
+
+================================================================================
+
+Erstellt: 7. Januar 2026
+Status: Ready for Development ✅
+
+================================================================================

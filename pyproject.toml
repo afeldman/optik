@@ -1,0 +1,49 @@
+[build-system]
+requires = ["maturin>=1.6,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "optik"
+version = "0.1.0"
+description = "High-performance camera manager for Basler and IDS cameras with Rust/Python bindings"
+authors = [{ name = "Anton Feldmann", email = "anton.feldmann@-ai.de" }]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+
+dependencies = [
+    "cbor2>=5.6.5",
+    "fire>=0.7.0",
+    "picamera2>=0.3.0",
+    "loguru>=0.7.3",
+    "opencv-contrib-python>=4.12.0.88",
+    "opencv-python>=4.12.0.88",
+    "pillow>=11.3.0",
+    "pydantic>=2.11.7",
+    "pynng>=0.8.1",
+    "python-decouple>=3.8",
+    "redis>=6.4.0",
+    "toml>=0.10.2",
+    "zeroconf>=0.147.0",
+    "numpy>=1.21.6",
+    "trio>=0.27.0",
+    "libcamera-py>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1.0",
+    "black>=23.0",
+    "ruff>=0.2.0",
+    "mypy>=1.0",
+    "types-toml",
+]
+
+[project.scripts]
+optik = "optik.cli:main"
+
+[tool.maturin]
+module-name = "optik._core"
+python-source = "src/python"
