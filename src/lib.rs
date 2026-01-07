@@ -13,6 +13,7 @@ pub mod error;
 pub mod feature_registry;
 pub mod basler;
 pub mod ids;
+pub mod config;
 
 use camera::Camera;
 use frame::Frame;
